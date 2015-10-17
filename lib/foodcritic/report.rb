@@ -53,10 +53,10 @@ module FoodCritic
         end
       elsif options.has_key?(:context) && @options[:context] then
         # Handle deprecated -C option
-        formatter = ContextOutput.new
+        formatter = Formatter::Context.new
       else
         # Handle default formatter
-        formatter = SummaryOutput.new
+        formatter = Formatter::Summary.new
       end
       formatter
     end
