@@ -40,6 +40,9 @@ module FoodCritic
         end
       end
       if options[:formatter] then
+        unless options[:formatter].include?('::')
+          options[:formatter] = 'FoodCritic::Formatter::' + options[:formatter]
+        end
         begin
           formatter = options[:formatter].split('::').map do |word|
             @last = @last ? @last : Object

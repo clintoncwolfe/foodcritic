@@ -25,7 +25,7 @@ module FoodCritic
         end
 
         opts.on('-F', '--formatter Some::Formatter',
-          "Use the specified reporter class to output") do |f|
+          "Use the specified reporter class to output.  If no :: in the name, FoodCritic::Formatter:: is prepended.") do |f|
           @options[:formatter] = f
         end
         opts.on('-o', '--formatter-output PATH',
