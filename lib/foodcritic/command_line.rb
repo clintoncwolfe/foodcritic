@@ -14,7 +14,9 @@ module FoodCritic
         cookbook_paths: [],
         role_paths: [],
         environment_paths: [],
-        exclude_paths: []
+        exclude_paths: [],
+        formatters: [],
+        formatter_destinations: []
       }
       @parser = OptionParser.new do |opts|
         opts.banner = 'foodcritic [cookbook_paths]'
@@ -25,12 +27,12 @@ module FoodCritic
         end
 
         opts.on('-F', '--formatter Some::Formatter',
-          "Use the specified reporter class to output.  If no :: in the name, FoodCritic::Formatter:: is prepended.") do |f|
-          @options[:formatter] = f
+          "Use the specified reporter class to output.  If no :: in the name, FoodCritic::Formatter:: is prepended.  May be repeated with -o.") do |f|
+          @options[:formatters] << f
         end
         opts.on('-o', '--formatter-output PATH',
-          "Last formatter specified will output to this PATH") do |f|
-          @options[:formatter_dest] = f
+          "Last formatter specified will output to this PATH.  May be repeated.") do |o|
+          @options[:formatter_destinations] << o
         end
         opts.on('-r', "--require RUBYFILE",
           "Require the specified path, loading a a formatter or other ruby.  Use -I for rules. ") do |f|
@@ -57,7 +59,7 @@ module FoodCritic
         opts.on('-C', '--[no-]context',
                 'Show lines matched against rather than the '\
                 'default summary.') do |c|
-          @options[:context] = c
+          @options[:formatters] << 'Context'
         end
         opts.on('-E', '--environment-path PATH',
                 'Environment path(s) to check.') do |e|
@@ -162,6 +164,15 @@ module FoodCritic
       search.parser?
     end
 
+    # Do we have a sensible number of formatters?
+    #
+    # @return [Boolean] True if the formatter +  destination count is valid,
+    #   and all requested formatters can be loaded.
+    def valid_formatters?
+      OutputManager.new(options).validate_formatters    
+    end
+    
+    
     # The cookbook paths to check
     #
     # @return [Array<String>] Path(s) to the cookbook(s) being checked.

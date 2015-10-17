@@ -22,6 +22,8 @@ module FoodCritic
       return [cmd_line.version, 0] if cmd_line.show_version?
       if !cmd_line.valid_grammar?
         [cmd_line.help, 4]
+      elsif !cmd_line.valid_formatters?
+        [cmd_line.help, 5]
       elsif cmd_line.list_rules?
         listing = FoodCritic::Linter.new.list(cmd_line.options)
         [listing, 0]
