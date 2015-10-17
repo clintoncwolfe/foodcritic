@@ -19,6 +19,8 @@ def require_chef
 end
 
 def chef_dsl_methods
+  # FIXME: `default` is not valid (in Chef-12 anyway) in a recipe, you must use
+  # node.default so adding Chef::Node.public_instance_methods here seems wrong
   (Chef::Node.public_instance_methods +
    chef_dsl_module.included_modules.map do |mixin|
      mixin.public_instance_methods
@@ -26,13 +28,17 @@ def chef_dsl_methods
 end
 
 def chef_node_methods
-  Chef::Node.public_instance_methods.flatten.sort.uniq
+  (Chef::Node.public_instance_methods + Chef::Node::Attribute.public_instance_methods).flatten.sort.uniq
 end
 
 def chef_resource_actions
   chef_resources do |resource_klazz,resource|
-    next if resource.to_s == 'Chef::Resource::WindowsScript'
-    instance = resource.new('dsl')
+    next if [
+        'Chef::Resource::WindowsScript',
+        'Chef::Resource::WindowsPackage',
+      ].include?(resource.to_s)
+
+    instance = resource.new('dsl', nil)
     actions = Array(instance.action).map{|a| a.to_sym}
     if instance.respond_to?(:allowed_actions)
       actions += instance.allowed_actions
@@ -80,5 +86,5 @@ def chef_resources
       yield resource_klazz, resource
     end
   end
-  Hash[resources]
+  Hash[resources.compact]
 end

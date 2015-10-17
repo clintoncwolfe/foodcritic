@@ -1,8 +1,6 @@
 module FoodCritic
-
   # Encapsulates functions that previously were calls to the Chef gem.
   module Chef
-
     def chef_dsl_methods
       load_metadata
       @dsl_metadata[:dsl_methods].map(&:to_sym)
@@ -25,7 +23,7 @@ module FoodCritic
 
     # Is this a valid Lucene query?
     def valid_query?(query)
-      raise ArgumentError, "Query cannot be nil or empty" if query.to_s.empty?
+      fail ArgumentError, 'Query cannot be nil or empty' if query.to_s.empty?
 
       # Attempt to create a search query parser
       search = FoodCritic::Chef::Search.new
@@ -48,23 +46,27 @@ module FoodCritic
     # The DSL metadata doesn't necessarily reflect the version of Chef in the
     # local user gemset.
     def load_metadata
-      version = self.respond_to?(:chef_version) ? chef_version : Linter::DEFAULT_CHEF_VERSION
+      version = if self.respond_to?(:chef_version)
+                  chef_version
+                else
+                  Linter::DEFAULT_CHEF_VERSION
+                end
       metadata_path = [version, version.sub(/\.[a-z].*/, ''),
-	               Linter::DEFAULT_CHEF_VERSION].map do |version|
-	metadata_path(version)
-      end.find{|m| File.exists?(m)}
+        Linter::DEFAULT_CHEF_VERSION].map do |version|
+          metadata_path(version)
+        end.find { |m| File.exist?(m) }
       @dsl_metadata ||= Yajl::Parser.parse(IO.read(metadata_path),
-        :symbolize_keys => true)
+                                           symbolize_keys: true)
     end
 
     def metadata_path(chef_version)
       File.join(File.dirname(__FILE__), '..', '..',
-        "chef_dsl_metadata/chef_#{chef_version}.json")
+                "chef_dsl_metadata/chef_#{chef_version}.json")
     end
 
     def resource_check?(key, resource_type, field)
       if resource_type.to_s.empty? || field.to_s.empty?
-        raise ArgumentError, "Arguments cannot be nil or empty."
+        fail ArgumentError, 'Arguments cannot be nil or empty.'
       end
 
       load_metadata
@@ -80,28 +82,25 @@ module FoodCritic
     end
 
     class Search
-
-      # The search grammars that ship with any Chef gems installed locally.
-      # These are returned in descending version order (a newer Chef version
-      #   could break our ability to load the grammar).
+      # lucene.treetop used to be provided by chef gem
+      # We're keeping a local copy from chef 10.x
       def chef_search_grammars
-        Gem.path.map do |gem_path|
-          Dir["#{gem_path}/gems/chef-*/**/lucene.treetop"]
-        end.flatten.sort.reverse
+        [File.expand_path('../../..', __FILE__) + "/misc/lucene.treetop"]
       end
 
       # Create the search parser from the first loadable grammar.
       def create_parser(grammar_paths)
-        @search_parser ||= grammar_paths.inject(nil) do |parser,lucene_grammar|
-            begin
-              break parser unless parser.nil?
-              # Don't instantiate custom nodes
-              Treetop.load_from_string(
-                IO.read(lucene_grammar).gsub(/<[^>]+>/, ''))
-              LuceneParser.new
-            rescue
-              # Silently swallow and try the next grammar
-            end
+        @search_parser ||=
+          grammar_paths.inject(nil) do |parser, lucene_grammar|
+          begin
+            break parser unless parser.nil?
+            # Don't instantiate custom nodes
+            Treetop.load_from_string(
+              IO.read(lucene_grammar).gsub(/<[^>]+>/, ''))
+            LuceneParser.new
+          rescue
+            # Silently swallow and try the next grammar
+          end
         end
       end
 
@@ -114,8 +113,6 @@ module FoodCritic
       def parser
         @search_parser
       end
-
     end
   end
-
 end

@@ -5,6 +5,8 @@ foodcritic(1) -- lint tool for chef cookbooks
 
 `foodcritic` [<options>...] <cookbook>...
 
+`foodcritic` [<options>...] --list
+
 
 ## DESCRIPTION
 
@@ -19,7 +21,13 @@ poor style.
 ## OPTIONS
 
  * `-t`, `--tags` <TAGS>:
-   Only check against rules with the specified tags.
+   Only check against rules with the specified tags. Prefix
+   tags with a tilde `~` to exclude rules.
+
+ * `-l`, `--list`:
+   Do not perform a lint check; instead simply list the 
+   rules that would be enabled based on the defaults and 
+   the rule selection options (-t, -I)
 
  * `-f`, `--epic-fail` <TAGS>:
    Exit non-zero if any of the specified tags are matched.
@@ -50,6 +58,8 @@ poor style.
  * `-V`, `--version`:
    Display the foodcritic version.
 
+ * `-X`, `--exclude` <PATH>:
+   Exclude path(s) from being linted.
 
 ## RETURN VALUES
 

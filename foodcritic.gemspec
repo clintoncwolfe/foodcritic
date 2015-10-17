@@ -4,20 +4,24 @@ require 'foodcritic/version'
 Gem::Specification.new do |s|
   s.name = 'foodcritic'
   s.version = FoodCritic::VERSION
-  s.description = 'Lint tool for Opscode Chef cookbooks.'
+  s.description = 'Lint tool for Chef cookbooks.'
   s.summary = "foodcritic-#{s.version}"
   s.authors = ['Andrew Crump']
-  s.homepage = 'http://acrmp.github.com/foodcritic'
+  s.homepage = 'http://foodcritic.io'
   s.license = 'MIT'
   s.executables << 'foodcritic'
-  s.add_dependency('gherkin', '~> 2.11.7')
-  s.add_dependency('nokogiri', '~> 1.5.4')
-  s.add_dependency('rake', '~> 10.1.0')
-  s.add_dependency('treetop', '~> 1.4.10')
-  s.add_dependency('yajl-ruby', '~> 1.1.0')
+  s.required_ruby_version = ">= 2.0.0"
+  s.add_dependency('gherkin', '~> 2.11')
+  s.add_dependency('nokogiri', '>= 1.5', '< 2.0')
+  s.add_dependency('rake')
+  s.add_dependency('treetop', '~> 1.4')
+  s.add_dependency('yajl-ruby', '~> 1.1')
   s.add_dependency('erubis')
-  s.files = Dir['chef_dsl_metadata/*.json'] + Dir['lib/**/*.rb']
+  s.add_dependency('rufus-lru', '~> 1.0')
+  s.files = Dir['chef_dsl_metadata/*.json'] +
+    Dir['lib/**/*.rb'] +
+    Dir['misc/**/*']
   s.files += Dir['spec/**/*'] + Dir['features/**/*']
   s.files += Dir['*.md'] + Dir['LICENSE'] + Dir['man/*']
-  s.required_ruby_version = '>= 1.9.2'
+  s.required_ruby_version = '>= 2.0.0'
 end

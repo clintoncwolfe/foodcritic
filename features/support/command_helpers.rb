@@ -5,8 +5,16 @@ module FoodCritic
   # Unless the environment variable FC_FORK_PROCESS is set to 'true' then the features will be run in the same process.
   module CommandHelpers
 
+    include MiniTest::Assertions
+
+    attr_writer :assertions
+    def assertions
+      @assertions ||= 0
+    end
+
     # The warning codes and messages displayed to the end user.
     WARNINGS = {
+      'FC001' => 'Use strings in preference to symbols to access node attributes',
       'FC002' => 'Avoid string interpolation where not required',
       'FC003' => 'Check whether you are running with chef server before using server-specific features',
       'FC004' => 'Use a service resource to start and stop services',
@@ -54,6 +62,9 @@ module FoodCritic
       'FC049' => 'Role name does not match containing file name',
       'FC050' => 'Name includes invalid characters',
       'FC051' => 'Template partials loop indefinitely',
+      'FC052' => 'Metadata uses the unimplemented "suggests" keyword',
+      'FC053' => 'Metadata uses the unimplemented "recommends" keyword',
+      # FC054 was yanked and is considered reserved, do not reuse it
       'FCTEST001' => 'Test Rule'
     }
 
@@ -135,6 +146,12 @@ module FoodCritic
       expect_output(Regexp.new(expected_switch))
     end
 
+    def has_test_warnings?(output)
+      output.split("\n").grep(/FC[0-9]+:/).map do |warn|
+        File.basename(File.dirname(warn.split(':').take(3).last.strip))
+      end.include?('test')
+    end
+
     def man_page_options
       man_path = Pathname.new(__FILE__) + '../../../man/foodcritic.1.ronn'
       option_lines = File.read(man_path).split('## ').find do |s|
@@ -171,10 +188,13 @@ module FoodCritic
          :description => 'Only check against rules valid for this version of Chef.'},
 
         {:short => 'f', :long => 'epic-fail TAGS',
-         :description => "Fail the build if any of the specified tags are matched ('any' -> fail on any match)."},
+         :description => "Fail the build based on tags. Use 'any' to fail on all warnings."},
+
+        {:short => 'l', :long => 'list',
+         :description => 'List all enabled rules and their descriptions.'},
 
         {:short => 't', :long => 'tags TAGS',
-         :description => 'Only check against rules with the specified tags.'},
+         :description => 'Check against (or exclude ~) rules with the specified tags.'},
 
         {:short => 'B', :long => 'cookbook-path PATH',
          :description => 'Cookbook path(s) to check.'},
@@ -195,7 +215,10 @@ module FoodCritic
          :description => 'Specify grammar to use when validating search syntax.'},
 
         {:short => 'V', :long => 'version',
-         :description => 'Display the foodcritic version.'}
+         :description => 'Display the foodcritic version.'},
+
+        {:short => 'X', :long => 'exclude PATH',
+         :description => 'Exclude path(s) from being linted.'}
 
       ]
     end
@@ -217,9 +240,9 @@ module FoodCritic
     # @param [String] output The warning to check for.
     def expect_output(output)
       if output.respond_to?(:~)
-        @review.should match(output)
+        @review.must_match(output)
       else
-        @review.should include(output)
+        @review.must_include(output)
       end
     end
 
@@ -228,30 +251,41 @@ module FoodCritic
     # @param [String] output The output to check for.
     def expect_no_output(output)
       if output.respond_to?(:~)
-        @review.should_not match(output)
+        @review.wont_match(output)
       else
-        @review.should_not include(output)
+        @review.wont_include(output)
       end
     end
 
     # Assert that an error occurred following a lint check.
     def assert_error_occurred
-      @status.should_not == 0
+      @status.wont_equal 0
     end
 
     # Assert that no error occurred following a lint check.
     def assert_no_error_occurred
-      @status.should == 0
+      @status.must_equal 0
+    end
+
+    # Assert that warnings have not been raised against the test code which
+    # should have been excluded from linting.
+    def assert_no_test_warnings
+      refute has_test_warnings?(@review)
+    end
+
+    # Assert that warnings have been raised against the test code which
+    # shouldn't have been excluded from linting.
+    def assert_test_warnings
+      assert has_test_warnings?(@review)
     end
 
     # Run a lint check with the provided command line arguments.
     #
     # @param [Array] cmd_args The command line arguments.
     def run_lint(cmd_args)
-      in_current_dir do
+      cd '.' do
         show_context = cmd_args.include?('-C')
-        cmd = CommandLine.new(cmd_args)
-        review, @status = FoodCritic::Linter.check(cmd)
+        review, @status = FoodCritic::Linter.run(CommandLine.new(cmd_args))
         suppress_output {Report.new(cmd.options).report(review)} if review.is_a? FoodCritic::Review
         @review =
           if review.nil? || (review.respond_to?(:warnings) && review.warnings.empty?)
@@ -294,9 +328,13 @@ module FoodCritic
     # Assert that warnings have not been raised against the test code which
     # should have been excluded from linting.
     def assert_no_test_warnings
-      all_output.split("\n").grep(/FC[0-9]+:/).map do |warn|
-        File.basename(File.dirname(warn.split(':').take(3).last.strip))
-      end.should_not include 'test'
+      refute has_test_warnings?(all_output)
+    end
+
+    # Assert that warnings have been raised against the test code which
+    # shouldn't have been excluded from linting.
+    def assert_test_warnings
+      assert has_test_warnings?(all_output)
     end
 
     # The available tasks for this build

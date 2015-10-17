@@ -1,7 +1,6 @@
 require 'gherkin/tag_expression'
 
 module FoodCritic
-
   # A warning of a possible issue
   class Warning
     attr_reader :rule, :match, :is_failed
@@ -11,9 +10,13 @@ module FoodCritic
     #     Warning.new(rule, :filename => 'foo/recipes.default.rb',
     #       :line => 5, :column=> 40)
     #
-    def initialize(rule, match={}, options={})
+    def initialize(rule, match = {}, options = {})
       @rule, @match = rule, match
-      @is_failed = options[:fail_tags].empty? ? false : rule.matches_tags?(options[:fail_tags])
+      @is_failed = if options[:fail_tags].empty?
+                     false
+                   else
+                     rule.matches_tags?(options[:fail_tags])
+                   end
     end
 
     # If this warning has failed or not.
@@ -22,9 +25,22 @@ module FoodCritic
     end
   end
 
+  # Simple container for rule listings.
+  class RuleList
+    attr_reader :rules
+    def initialize(rules = [])
+      @rules = rules
+    end
+
+    def to_s
+      @rules.sort { |a,b| a.code <=> b.code }.
+        map { |r| r.to_s }.join("\n")
+    end
+
+  end
+
   # The collected warnings (if any) raised against a cookbook tree.
   class Review
-
     attr_reader :cookbook_paths, :warnings
 
     def initialize(cookbook_paths, warnings)
@@ -51,9 +67,9 @@ module FoodCritic
       @warnings.map do |w|
         ["#{w.rule.code}: #{w.rule.name}: #{w.match[:filename]}",
          w.match[:line].to_i]
-      end.sort do |x,y|
+      end.sort do |x, y|
         x.first == y.first ? x[1] <=> y[1] : x.first <=> y.first
-      end.map{|w|"#{w.first}:#{w[1]}"}.uniq.join("\n")
+      end.map { |w|"#{w.first}:#{w[1]}" }.uniq.join("\n")
     end
 
     def warnings_by_file_and_line
@@ -74,14 +90,15 @@ module FoodCritic
   # A rule to be matched against.
   class Rule
     attr_accessor :code, :name, :applies_to, :cookbook, :attributes, :recipe,
-      :provider, :resource, :metadata, :library, :template, :role, :environment, :source
+                  :provider, :resource, :metadata, :library, :template, :role,
+                  :environment, :source
 
     attr_writer :tags
 
     def initialize(code, name)
       @code, @name = code, name
       @tags = [code]
-      @applies_to = Proc.new {|version| true}
+      @applies_to = Proc.new { |version| true }
     end
 
     # The tags associated with this rule. Rule is always tagged with the tag
@@ -90,7 +107,7 @@ module FoodCritic
       ['any'] + @tags
     end
 
-    # Checks the rule's tags to see if they match a Gherkin (Cucumber) expression
+    # Checks the rule tags to see if they match a Gherkin (Cucumber) expression
     def matches_tags?(tag_expr)
       Gherkin::TagExpression.new(tag_expr).evaluate(tags.map do |t|
         Gherkin::Formatter::Model::Tag.new(t, 1)
@@ -102,5 +119,4 @@ module FoodCritic
       "#{@code}: #{@name}"
     end
   end
-
 end

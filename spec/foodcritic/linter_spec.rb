@@ -11,7 +11,7 @@ describe FoodCritic::Linter do
 
   describe "chef version" do
     it "should be the latest stable version of Chef" do
-      FoodCritic::Linter::DEFAULT_CHEF_VERSION.must_equal "11.4.0"
+      FoodCritic::Linter::DEFAULT_CHEF_VERSION.must_equal "12.4.1"
     end
   end
 
@@ -42,9 +42,21 @@ describe FoodCritic::Linter do
 
   end
 
+  describe "#list_rules" do
+
+    it "does not require cookbook_path, role_path or environment_path to be specified" do
+      linter.list(:list => true)
+    end
+
+    it "returns a rule listing" do
+      linter.list(:list => true).must_respond_to(:rules)
+    end
+  end
+
+
   describe "#load_files!" do
     let(:default_rules_file) do
-      File.expand_path(File.join(File.dirname(__FILE__), '../../lib/foodcritic/rules.rb')) 
+      File.expand_path(File.join(File.dirname(__FILE__), '../../lib/foodcritic/rules.rb'))
     end
 
     let(:rule_dsl_load_mock) { MiniTest::Mock.new }

@@ -1,7 +1,6 @@
 require 'pathname'
 
 module FoodCritic
-
   # The DSL methods exposed for defining rules. A minimal example rule:
   #
   #     rule "FC123", "My rule name" do
@@ -27,7 +26,7 @@ module FoodCritic
 
     include Api
 
-    def initialize(chef_version=Linter::DEFAULT_CHEF_VERSION)
+    def initialize(chef_version = Linter::DEFAULT_CHEF_VERSION)
       @chef_version = chef_version
     end
 
@@ -39,8 +38,8 @@ module FoodCritic
       yield self
     end
 
-    # Add tags to the rule which can be used by the end user to filter the rules
-    # to be applied.
+    # Add tags to the rule which can be used by the end user to filter the
+    # rules to be applied.
     def tags(tags)
       rules.last.tags += tags
     end
@@ -74,7 +73,7 @@ module FoodCritic
     rule_block :role
 
     # Load the ruleset(s).
-    def self.load(paths, chef_version=Linter::DEFAULT_CHEF_VERSION)
+    def self.load(paths, chef_version = Linter::DEFAULT_CHEF_VERSION)
       dsl = RuleDsl.new(chef_version)
       paths.map do |path|
         File.directory?(path) ? Dir["#{path}/**/*.rb"].sort : path
@@ -83,7 +82,5 @@ module FoodCritic
       end
       dsl.rules
     end
-
   end
-
 end
