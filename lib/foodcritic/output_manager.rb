@@ -4,20 +4,20 @@ Dir.glob(File.dirname(__FILE__) + '/formatter/*.rb') { |file| require_relative f
 
 module FoodCritic
   # Reporting manager class
-  class Report
+  class OutputManager
     attr_accessor :options
 
     # Create a new instance
     #
-    # @param [Hash] options The configuration options
+    # @param [Hash] options The configuration options from CLI invocation
     def initialize(options)
       @options = options
     end
 
-    # Perform the reporting
+    # Perform all output, using the Review
     #
     # @param [Review] review The review objects with the results to report on 
-    def report(review)
+    def output_all(review)
       if review.is_a? Review then
         formatter = load_formatter(@options)
         formatter.destination = @options[:formatter_dest]

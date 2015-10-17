@@ -19,7 +19,7 @@ module FoodCritic
         desc 'Lint Chef cookbooks' unless ::Rake.application.last_comment
         task(name) do
           result = FoodCritic::Linter.new.check(options.merge(default_options))
-          Report.new(options).report(result)
+          OutputManager.new(options).output_all(result)
           abort if result.failed?
         end
       end
