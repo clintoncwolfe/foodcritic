@@ -24,16 +24,16 @@ module FoodCritic
           @options[:tags] << t
         end
 
-        opts.on("--reporter REPORTER",
-          "Use the specified reporter to output") do |f|
-          @options[:reporter] = f
+        opts.on('-F', '--formatter Some::Formatter',
+          "Use the specified reporter class to output") do |f|
+          @options[:formatter] = f
         end
-        opts.on("--report-dest DESTINATION",
-          "Output to destination (using reporter)") do |f|
-          @options[:report_dest] = f
+        opts.on('-o', '--formatter-output PATH',
+          "Last formatter specified will output to this PATH") do |f|
+          @options[:formatter_dest] = f
         end
-        opts.on("--require REQUIRED",
-          "Require the specified path when loading reporters") do |f|
+        opts.on('-r', "--require RUBYFILE",
+          "Require the specified path, loading a a formatter or other ruby.  Use -I for rules. ") do |f|
           @options[:require] = f
         end
         opts.on('-l', '--list',

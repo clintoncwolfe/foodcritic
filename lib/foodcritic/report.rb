@@ -1,4 +1,6 @@
-Dir.glob(File.dirname(__FILE__) + '/reporters/*.rb') { |file| require_relative file}
+
+# Load all core formatters
+Dir.glob(File.dirname(__FILE__) + '/formatter/*.rb') { |file| require_relative file}
 
 module FoodCritic
   # Reporting manager class
@@ -17,9 +19,9 @@ module FoodCritic
     # @param [Review] review The review objects with the results to report on 
     def report(review)
       if review.is_a? Review then
-        printer = load_printer(@options)
-        printer.destination = @options[:report_dest]
-        printer.output(review)
+        formatter = load_formatter(@options)
+        formatter.destination = @options[:formatter_dest]
+        formatter.output(review)
       else
         puts review.to_s
       end
@@ -28,7 +30,7 @@ module FoodCritic
     private
     
     # Load the printer
-    def load_printer(options)
+    def load_formatter(options)
       if options.has_key?(:require) then
         begin
           require options[:require]
@@ -37,24 +39,26 @@ module FoodCritic
           fail
         end
       end
-      if options[:reporter] then
+      if options[:formatter] then
         begin
-          printer = options[:reporter].split('::').map do |word|
+          formatter = options[:formatter].split('::').map do |word|
             @last = @last ? @last : Object
             @last = @last.const_get(word)
           end.last.new
         rescue
-          raise "Unable to create instance of reporter #{options[:reporter]}"
+          raise "Unable to create instance of formatter #{options[:formatter]}"
         end
-        if ! (printer.respond_to?(:output) && printer.respond_to?(:destination=)) then
-          raise "#{options[:reporter]} is not a reporter!"
+        if ! (formatter.respond_to?(:output) && formatter.respond_to?(:destination=)) then
+          raise "#{options[:formatter]} is not a formatter!"
         end
       elsif options.has_key?(:context) && @options[:context] then
-        printer = ContextOutput.new
+        # Handle deprecated -C option
+        formatter = ContextOutput.new
       else
-        printer = SummaryOutput.new
+        # Handle default formatter
+        formatter = SummaryOutput.new
       end
-      printer
+      formatter
     end
 
   end
