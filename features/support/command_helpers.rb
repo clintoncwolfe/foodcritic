@@ -284,17 +284,15 @@ module FoodCritic
     # @param [Array] cmd_args The command line arguments.
     def run_lint(cmd_args)
       cd '.' do
-        show_context = cmd_args.include?('-C')
-        review, @status = FoodCritic::Linter.run(CommandLine.new(cmd_args))
-        suppress_output {Report.new(cmd.options).report(review)} if review.is_a? FoodCritic::Review
-        @review =
-          if review.nil? || (review.respond_to?(:warnings) && review.warnings.empty?)
-            ''
-          elsif show_context
-            ContextOutput.new.output(review)
-          else
-            "#{review.to_s}\n"
-          end
+        review, @status = FoodCritic::Linter.run(CommandLine.new(cmd_args))        
+        sio = StringIO.new
+        # This logic shoudl be more flexible for other formatters.
+        if cmd_args.include?('-C')
+          OutputManager.new(:formatters => ['Context'], :formatter_destinations => [sio]).output_all(review)
+        else
+          OutputManager.new(:formatters => ['Summary'], :formatter_destinations => [sio]).output_all(review)
+        end
+        @review = sio.string
       end
     end
 

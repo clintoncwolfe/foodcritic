@@ -48,7 +48,9 @@ module FoodCritic
       for i in 0 .. options[:formatters].length - 1
 
         dest = options[:formatter_destinations][i]
-        if dest == '-' then
+        if dest.respond_to? :puts then
+          dest = dest
+        elsif dest == '-' then
           dest = $stdout
         else
           FileUtils.mkdir_p(File.dirname(dest))
