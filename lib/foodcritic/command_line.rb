@@ -59,6 +59,8 @@ module FoodCritic
         opts.on('-C', '--[no-]context',
                 'Show lines matched against rather than the '\
                 'default summary.') do |c|
+          # -C was implemented as a special flag; now it's
+          # just another way of selecting a formatter.  This should be replaced eventually.
           @options[:formatters] << 'Context'
         end
         opts.on('-E', '--environment-path PATH',
@@ -192,14 +194,6 @@ module FoodCritic
     # @return [Array<String>] Path(s) to the environment directories checked.
     def environment_paths
       Array(@options[:environment_paths])
-    end
-
-    # If matches should be shown with context rather than the default summary
-    # display.
-    #
-    # @return [Boolean] True if matches should be shown with context.
-    def show_context?
-      @options[:context]
     end
 
     # Parsed command-line options

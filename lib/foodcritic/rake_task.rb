@@ -30,7 +30,6 @@ module FoodCritic
           fail_tags: ['correctness'], # differs to default cmd-line behaviour
           cookbook_paths: files,
           exclude_paths: ['test/**/*', 'spec/**/*', 'features/**/*'],
-          context: false,
           chef_version: FoodCritic::Linter::DEFAULT_CHEF_VERSION
         }
       end

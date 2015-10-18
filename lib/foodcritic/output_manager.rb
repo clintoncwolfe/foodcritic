@@ -1,3 +1,4 @@
+require 'fileutils'
 
 # Load all core formatters
 Dir.glob(File.dirname(__FILE__) + '/formatter/*.rb') { |file| require_relative file}
@@ -42,15 +43,27 @@ module FoodCritic
     # @param [Review] review The review objects with the results to report on 
     def output_all(review)
 
-      if review.is_a? Review then
-        # Walk pairwise through the formatters and destinations
-        for i in 0 .. options[:formatters].length - 1
-          formatter = instantiate_formatter(options[:formatters][i])
-          formatter.destination = options[:formatter_destinations][i] unless options[:formatter_destinations][i] == '-'
-          formatter.output(review)
+
+      # Walk pairwise through the formatters and destinations
+      for i in 0 .. options[:formatters].length - 1
+
+        dest = options[:formatter_destinations][i]
+        if dest == '-' then
+          dest = $stdout
+        else
+          FileUtils.mkdir_p(File.dirname(dest))
+          dest = File.open(dest, 'w')
         end
-      else
-        puts review.to_s
+        
+        formatter = instantiate_formatter(options[:formatters][i], dest)
+
+        if review.is_a? Review then
+          formatter.review_finished(review)
+        else
+          formatter.review_aborted(review.to_s)
+        end
+          
+        dest.close
       end
     end
 
@@ -68,7 +81,7 @@ module FoodCritic
     end
     
     # instantiate a formatter
-    def instantiate_formatter(formatter_name)
+    def instantiate_formatter(formatter_name, io = $stdout)
       unless formatter_name.include?('::')
         formatter_name = 'FoodCritic::Formatter::' + formatter_name
       end
@@ -76,11 +89,11 @@ module FoodCritic
         formatter = formatter_name.split('::').map do |word|
           @last = @last ? @last : Object
           @last = @last.const_get(word)
-        end.last.new
+        end.last.new(io)
       rescue
         raise "Unable to create instance of formatter #{formatter_name}"
       end
-      if ! (formatter.respond_to?(:output) && formatter.respond_to?(:destination=)) then
+      if ! (formatter.respond_to?(:review_finished)) then
         raise "#{formatter_name} is not a formatter!"
       end
       formatter
