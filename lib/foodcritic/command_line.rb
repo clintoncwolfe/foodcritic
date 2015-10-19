@@ -27,7 +27,7 @@ module FoodCritic
         end
 
         opts.on('-F', '--formatter Some::Formatter',
-          "Use the specified reporter class to output.  If no :: in the name, FoodCritic::Formatter:: is prepended.  May be repeated with -o.") do |f|
+          "Specify a formatter class to use for output.  If there is no :: in the name, FoodCritic::Formatter:: is prepended.  May be repeated with -o.") do |f|
           @options[:formatters] << f
         end
         opts.on('-o', '--formatter-output PATH',
@@ -35,7 +35,7 @@ module FoodCritic
           @options[:formatter_destinations] << o
         end
         opts.on('-r', "--require RUBYFILE",
-          "Require the specified path, loading a a formatter or other ruby.  Use -I for rules. ") do |f|
+          "Require the specified path, loading a formatter or other ruby.  Use -I for rules.") do |f|
           @options[:require] = f
         end
         opts.on('-l', '--list',

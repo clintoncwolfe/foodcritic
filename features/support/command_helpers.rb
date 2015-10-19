@@ -190,6 +190,15 @@ module FoodCritic
         {:short => 'f', :long => 'epic-fail TAGS',
          :description => "Fail the build based on tags. Use 'any' to fail on all warnings."},
 
+        {:short => 'F', :long => 'formatter Some::Formatter',
+         :description => "Specify a formatter class to use for output.  If there is no :: in the name, FoodCritic::Formatter:: is prepended.  May be repeated with -o."},
+
+        {:short => 'o', :long => 'formatter-output PATH',
+         :description => 'Last formatter specified will output to this PATH.  May be repeated.'},
+        
+        {:short => 'r', :long => 'require RUBYFILE',
+         :description => 'Require the specified path, loading a formatter or other ruby.  Use -I for rules.'},
+
         {:short => 'l', :long => 'list',
          :description => 'List all enabled rules and their descriptions.'},
 

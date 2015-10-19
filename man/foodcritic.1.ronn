@@ -41,6 +41,20 @@ poor style.
 
  * `-C`, `--`[`no-`]`context`:
    Show lines matched against rather than the default summary.
+   Equivalent to -F Context.
+
+ * `-F`, `--formatter` <Some::Formatter>:
+   Specify a formatter class to use for output.  If there is no
+   :: in the name, FoodCritic::Formatter:: is prepended.
+   May be repeated with -o.
+
+ * `-o`, `--formatter-output` <PATH>:
+   Last formatter specified will output to this PATH.  May be
+   repeated.
+
+ * `-r`, `--require` <RUBYFILE>`:
+   Require the specified path, loading a formatter or other
+   ruby.  Use -I for rules.
 
  * `-E`, `--environment-path`:
    Environment path(s) to check.

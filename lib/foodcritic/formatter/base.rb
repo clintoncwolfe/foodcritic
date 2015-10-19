@@ -28,11 +28,11 @@ module FoodCritic
       #  the review is just a string.
       #
       # @param review_string [String]
-      #   Some kind of error.
+      #   Some kind of error or usage string.
       #
       # @return [void]
       def review_aborted(review_string)
-        puts review_string
+        output.puts review_string
       end
       
       
