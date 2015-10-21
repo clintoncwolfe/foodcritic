@@ -9,7 +9,8 @@ module FoodCritic
       # Output the review showing matching lines with context.
       #
       # @param [Review] review The review to output.
-      def review_finished(review)        
+      # @param [FixNum] status The exit code of the pass
+      def review_finished(review, status = 0)        
 
         context = 3
 

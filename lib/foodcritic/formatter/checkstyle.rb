@@ -9,7 +9,8 @@ module FoodCritic
       # number.
       #
       # @param [Review] review The review to output.
-      def review_finished(review)
+      # @param [FixNum] status The exit code of the pass
+      def review_finished(review, status = 0)
         # TODO - foodcritic deps on Nokogiri, should probably port this over 
         output.write "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<checkstyle version=\"5.0\">\n"
         review.warnings_by_file_and_line.each do |file, line|

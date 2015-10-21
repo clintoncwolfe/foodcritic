@@ -40,9 +40,9 @@ module FoodCritic
     
     # Perform all output, using the Review
     #
-    # @param [Review] review The review objects with the results to report on 
-    def output_all(review)
-
+    # @param [Review] review The review objects with the results to report on
+    # @param [FixNum] status The exit code of the pass
+    def output_all(review, status = 0)
 
       # Walk pairwise through the formatters and destinations
       for i in 0 .. options[:formatters].length - 1
@@ -60,9 +60,9 @@ module FoodCritic
         formatter = instantiate_formatter(options[:formatters][i], dest)
 
         if review.is_a? Review then
-          formatter.review_finished(review)
+          formatter.review_finished(review, status)
         else
-          formatter.review_aborted(review.to_s)
+          formatter.review_aborted(review.to_s, status)
         end
           
         dest.close
