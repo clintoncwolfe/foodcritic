@@ -97,10 +97,21 @@ module FoodCritic
           options[:exclude_paths] << e
         end
       end
-      # -v is not implemented but OptionParser gives the Foodcritic's version
-      # if that flag is passed
-      if args.include? '-v'
-        help
+
+      if args.include? '-v' or show_help?
+
+        # For -v, intent is for a verbose mode one day, but -v is not implemented yet;
+        # but OptionParser will eat -v, giving --version, so intercept and don't parse args.
+        # Unparsed args => no args => usage error => help output
+
+        # for show_help?, that means the user asked for help, so don't try
+        # to parse any other args
+        
+        # In these special cases, do not parse the args, but
+        # instead force a standard output formatter        
+        @options[:formatters] = ['Summary']
+        @options[:formatter_destinations] = ['-']
+        
       else
         begin
           @parser.parse!(args) unless show_help?

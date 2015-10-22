@@ -293,14 +293,17 @@ module FoodCritic
     # @param [Array] cmd_args The command line arguments.
     def run_lint(cmd_args)
       cd '.' do
-        review, @status = FoodCritic::Linter.run(CommandLine.new(cmd_args))        
+        cli_opts = CommandLine.new(cmd_args)
+
+        review, @status = FoodCritic::Linter.run(cli_opts)
+          
+        # Capture any stdout
         sio = StringIO.new
-        # This logic shoudl be more flexible for other formatters.
-        if cmd_args.include?('-C')
-          OutputManager.new(:formatters => ['Context'], :formatter_destinations => [sio]).output_all(review)
-        else
-          OutputManager.new(:formatters => ['Summary'], :formatter_destinations => [sio]).output_all(review)
-        end
+        old_stdout = $stdout
+        $stdout = sio
+        OutputManager.new(cli_opts.options).output_all(review, @status)
+        $stdout = old_stdout
+
         @review = sio.string
       end
     end

@@ -17,14 +17,15 @@ module FoodCritic
     # wrapper. If you are programatically using foodcritic you should use
     # `#check` below.
     def self.run(cmd_line)
-      # The first item is the string output, the second is exit code.
+      # The first item is the string output, the second is exit code.              
+      
+      # TODO: this is badly coupled.  CommandLine handles the output of help,
+      # but all other cases rely on the output formatters being ready.
       return [cmd_line.help, 0] if cmd_line.show_help?
+      return [cmd_line.help, 5] unless cmd_line.valid_formatters?
       return [cmd_line.version, 0] if cmd_line.show_version?
-      if !cmd_line.valid_grammar?
-        [cmd_line.help, 4]
-      elsif !cmd_line.valid_formatters?
-        [cmd_line.help, 5]
-      elsif cmd_line.list_rules?
+      return [cmd_line.help, 4] unless cmd_line.valid_grammar?
+      if cmd_line.list_rules?
         listing = FoodCritic::Linter.new.list(cmd_line.options)
         [listing, 0]
       elsif cmd_line.valid_paths?
